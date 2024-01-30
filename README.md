@@ -1,14 +1,10 @@
-# Testimonial User Guide
+# Hyvä Testimonial
+
+**Hyvä Testimonial is a part of MageINIC Testimonial extension that adds Hyvä features.** This extension extends Testimonial definitions.
 
 ## 1. How to install
 
-### Method 1: Install ready-to-paste package
-
-- Download the latest version at [Testimonial for Magento 2](https://www.mageinic.com/testimonial.html)
-
-### Method 2: Install via composer [Recommend]
-
-Run the following command in Magento 2 root folder
+Run the following command in Magento 2 root folder:
 
 ```
 composer require mageinic/hyva-testimonial
@@ -22,13 +18,14 @@ php bin/magento cache:flush
 ```
 
 **Note:**
-Magento 2 Hyva Testimonial requires installing [MageINIC Testimonial](https://github.com/mageinic/testimonial) in your Magento installation.
+Magento 2 Testimonial requires installing [MageINIC Testimonial](https://github.com/mageinic/testimonial) in your Magento installation.
 
-## 2. How to use
+**Or Install via composer [Recommend]**
+```
+composer require mageinic/testimonial
+```
 
-- Please refer to the `Testimonial-Extension-User-Guide.pdf` file for instructions on how to use the extension.
-
-## 3. Get Support
+## 2. Get Support
 
 - Feel free to [contact us](https://www.mageinic.com/contact.html) if you have any further questions.
 - Like this project, Give us a **Star**
