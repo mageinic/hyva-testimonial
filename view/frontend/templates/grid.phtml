@@ -1,0 +1,141 @@
+<?php
+/**
+ * MageINIC
+ * Copyright (C) 2023 MageINIC <support@mageinic.com>
+ *
+ * NOTICE OF LICENSE
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see https://opensource.org/licenses/gpl-3.0.html.
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category MageINIC
+ * @package MageINIC_Testimonial
+ * @copyright Copyright (c) 2023 MageINIC (https://www.mageinic.com/)
+ * @license https://opensource.org/licenses/gpl-3.0.html GNU General Public License,version 3 (GPL-3.0)
+ * @author MageINIC <support@mageinic.com>
+ */
+
+use MageINIC\Testimonial\Block\Grid;
+use Magento\Framework\Escaper;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\Model\ViewModelRegistry;
+
+/**
+ * Testimonial Listing.
+ *
+ * @var Grid $block
+ * @var Escaper $escaper
+ * @var ViewModelRegistry $viewModels
+ * @var HeroiconsSolid $heroIconsSolid
+ */
+$collection = $block->getTestimonialCollection();
+$fields = ['Title', 'Rating', 'Designation', 'Company', 'Action'];
+$redirectUrl = $block->getUrl('testimonial/testimonial/form');
+$stars = 5;
+$heroIconsSolid = $viewModels->require(HeroiconsSolid::class);
+?>
+
+<div class="block block-testimonial-default my-6">
+    <div class="block-title block-title text-2xl mb-6">
+        <?= $escaper->escapeHtml(__('Testimonials List')) ?>
+    </div>
+</div>
+<div class="actions-toolbar">
+    <div class="primary">
+        <a href="<?= $escaper->escapeUrl($redirectUrl) ?>"
+           class="action btn btn-primary text-sm" aria-label="Add New Testimonial">
+            <?= $escaper->escapeHtml(__('Add Testimonial')) ?></a>
+    </div>
+</div>
+<div class="grid-cols-2 block-content gap-x-4 gap-y-0 my-6">
+    <?php if ($collection): ?>
+        <section class="container mx-auto p-6 font-mono">
+            <div class="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                        <tr class="text-md font-semibold tracking-wide
+                        text-left text-gray-900 bg-gray-100
+                        uppercase border-b border-gray-600">
+                            <?php foreach ($fields as $field): ?>
+                                <th class="px-4 py-3"
+                                    aria-label="<?= $escaper->escapeHtmlAttr(__(strtolower($field))) ?>">
+                                    <?= $escaper->escapeHtml(__($field)) ?>
+                                </th>
+                            <?php endforeach; ?>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                        <?php foreach ($collection as $testimonial): ?>
+                            <?php $name = "{$testimonial->getFirstName()} {$testimonial->getLastName()}" ?>
+                            <tr class="text-gray-700">
+                                <td class="px-4 py-3 border">
+                                    <div class="flex items-center text-sm">
+                                        <div class="relative w-8 h-8 mr-3 rounded-full md:block">
+                                            <img class="object-cover w-full h-full rounded-full"
+                                                 src="<?= $escaper->escapeUrl($block->getImageUrl($testimonial)) ?>"
+                                                 alt="<?= $escaper->escapeHtml($testimonial->getFirstName()) ?>"
+                                                 loading="lazy"/>
+                                            <div class="absolute inset-0 rounded-full shadow-inner"
+                                                 aria-hidden="true"></div>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-black">
+                                                <?= $escaper->escapeHtml($testimonial->getTitle()) ?>
+                                            </p>
+                                            <p class="text-xs text-gray-600">
+                                                <?= $escaper->escapeHtml($name) ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-ms font-semibold border">
+                                    <div class="flex items-center">
+                                        <?php for ($i = 1; $i <= $stars; $i++): ?>
+                                            <?php $filledStars = $testimonial->getRating(); ?>
+                                            <?php $class = ($i <= $filledStars) ? 'text-yellow-400'
+                                                : 'text-gray-300 dark:text-gray-500'; ?>
+                                            <?= $heroIconsSolid->starHtml(
+                                                "w-5 h-5 $class",
+                                                18,
+                                                18,
+                                                ["aria-hidden" => "true"]
+                                            ); ?>
+                                        <?php endfor; ?>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-xs font-semibold border">
+                                    <?= $escaper->escapeHtml($testimonial->getDesignation()) ?>
+                                </td>
+                                <td class="px-4 py-3 text-sm font-semibold border">
+                                    <?= $escaper->escapeHtml($testimonial->getCompany()) ?>
+                                </td>
+                                <td class="px-4 py-3 border">
+                                    <a href="<?= $escaper->escapeUrl(__($block->getEditUrl($testimonial->getId()))) ?>"
+                                       class="action view">
+                                    <span class="px-4 text-sm text-gray-500 hover:text-primary">
+                                        <?= $escaper->escapeHtml(__('Edit')) ?>
+                                    </span>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    <?php else: ?>
+        <div class="message info empty">
+            <span><?= $escaper->escapeHtml(__('You haven\'t added testimonial yet.')) ?></span>
+        </div>
+    <?php endif ?>
+</div>

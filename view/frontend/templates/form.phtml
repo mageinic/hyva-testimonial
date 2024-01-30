@@ -1,0 +1,376 @@
+<?php
+/**
+ * MageINIC
+ * Copyright (C) 2023 MageINIC <support@mageinic.com>
+ *
+ * NOTICE OF LICENSE
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see https://opensource.org/licenses/gpl-3.0.html.
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category MageINIC
+ * @package MageINIC_Testimonial
+ * @copyright Copyright (c) 2023 MageINIC (https://www.mageinic.com/)
+ * @license https://opensource.org/licenses/gpl-3.0.html GNU General Public License,version 3 (GPL-3.0)
+ * @author MageINIC <support@mageinic.com>
+ */
+
+use MageINIC\Testimonial\Api\Data\TestimonialInterface;
+use MageINIC\Testimonial\Block\Form;
+use MageINIC\Testimonial\ViewModel\GeneralConfigurationData;
+use Hyva\MageINICTestimonial\ViewModel\HyvaData;
+use Magento\Framework\Escaper;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\Model\ViewModelRegistry;
+
+/**
+ * Testimonial Form.
+ *
+ * @var Form $block
+ * @var Escaper $escaper
+ * @var GeneralConfigurationData $viewModelData
+ * @var ViewModelRegistry $viewModels
+ * @var HyvaData $hyvaData
+ * @var HeroiconsSolid $heroIconsSolid
+ */
+
+$stars = 5;
+$formId = 'testimonial-form';
+$viewModelData = $block->getViewModel();
+$viewModel = $viewModelData->getHelperData();
+$model = $block->getRegistry()->registry('current_testimonial');
+$hyvaData = $viewModels->require(HyvaData::class);
+$placeholder = $hyvaData->getPlaceholderImg();
+$heroIconsSolid = $viewModels->require(HeroiconsSolid::class);
+$buttons = $hyvaData->getWysiwygButtons();
+
+/**
+ * @var TestimonialInterface $model
+ */
+if ($model) {
+    $title = $model->getTitle();
+    $rating = (int)$model->getRating();
+    $designation = $model->getDesignation();
+    $company = $model->getCompany();
+    $content = $model->getContent();
+    $id = $model->getId();
+    $uploadedFile = $model->getUploadedFile();
+}
+?>
+<style>
+    @import url(https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.min.css);
+    /**
+     * tailwind.config.js
+     * module.exports = {
+     *   variants: {
+     *     extend: {
+     *       backgroundColor: ['active'],
+     *     }
+     *   },
+     * }
+     */
+    .active\:bg-gray-50:active {
+        --tw-bg-opacity:1;
+        background-color: rgba(249,250,251,var(--tw-bg-opacity));
+    }
+</style>
+<div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+    <div class="rounded-lg bg-white p-8 shadow-lg lg:col-span-3 lg:p-12">
+        <form class="form"
+              action="<?= $escaper->escapeUrl($block->getFormAction()) ?>"
+              id="<?= $escaper->escapeHtmlAttr($formId) ?>"
+              method="post" enctype='multipart/form-data'
+              x-data="{...initTestimonialForm(), ...hyva.formValidation($el)}"
+              @submit="testimonialSubmitForm">
+            <fieldset class="fieldset">
+                <div class="field title required p-2">
+                    <label class="label text-gray-700" for="name">
+                        <span><?= $escaper->escapeHtml(__('Title')) ?></span>
+                    </label>
+                    <input class="w-full required rounded-lg border-gray-200 p-3 text-sm" name="title" id="title"
+                           title="<?= $escaper->escapeHtmlAttr(__('Title')) ?>"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Title')) ?>"
+                           type="text" maxlength="80"
+                           data-validate='{"required": true}' @change="onChange"
+                           value="<?= $escaper->escapeHtmlAttr($title ?? '') ?>"/>
+                </div>
+                <div class="field rating p-2">
+                    <label class="label text-gray-700" id="rating_label">
+                        <span><?= $escaper->escapeHtmlAttr(__('Rating')) ?></span>
+                    </label>
+                    <div class="flex flex-row grow-0 focus-within:ring-4 ring-primary ring-opacity-50"
+                         x-data="{ clickedRatingId: <?= /* @noEscape */ $rating ?? 0 ?>}">
+                        <?php $options = range(1, 5); ?>
+                        <?php $iterator = 1; ?>
+                        <?php foreach ($options as $option): ?>
+                            <div class="relative" @click="clickedRatingId = <?= (int)$iterator ?> || 0">
+                                <label class="rating-<?= (int)$iterator ?> m-0 cursor-pointer text-gray-400"
+                                       for="<?= $escaper->escapeHtmlAttr('star_' . $option) ?>"
+                                       id="<?= $escaper->escapeHtmlAttr('star_' . $option) ?>_label">
+                                        <span :class="<?= (int)$iterator ?> <= clickedRatingId
+                                        ? 'text-yellow-400' : 'text-gray-400'" >
+                                            <?= $heroIconsSolid->starHtml(
+                                                '',
+                                                32,
+                                                32,
+                                                ["aria-hidden" => "true"]
+                                            ); ?>
+                                        </span>
+                                  <input class="absolute opacity-0 bottom-0 left-0 cursor-pointer"
+                                        type="radio" <?php if ($iterator === 1): ?>required<?php endif; ?>
+                                        name="rating" id="<?= $escaper->escapeHtmlAttr('star_' . $option) ?>"
+                                        value="<?= $escaper->escapeHtmlAttr($option) ?>"
+                                        <?php if ($iterator === 1): ?>
+                                            aria-label="<?= $escaper->escapeHtmlAttr(__('1 star')) ?>"
+                                        <?php else: ?>
+                                            aria-label="<?= $escaper->escapeHtmlAttr(__('%1 stars', $iterator)) ?>"
+                                        <?php endif; ?>
+                                        <?= isset($rating) && $rating == $iterator ? 'checked' : '' ?>/>
+                                </label>
+                            </div>
+                            <?php $iterator++; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="field first_name required p-2">
+                    <label class="label" for="firstname">
+                        <span><?= $escaper->escapeHtml(__('First Name')) ?></span>
+                    </label>
+                    <input name="first_name" id="firstname"
+                           title="<?= $escaper->escapeHtmlAttr(__('First Name')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr($viewModel->getFirstName()) ?>"
+                           class="w-full required rounded-lg border-gray-200 p-3 text-sm"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('First Name')) ?>"
+                           type="text"  data-validate='{"required": true}' @change="onChange"
+                           disabled="disabled" readonly/>
+                </div>
+                <div class="field last_name required p-2">
+                    <label class="label" for="lastname">
+                        <span><?= $escaper->escapeHtml(__('Last Name')) ?></span>
+                    </label>
+                    <input name="last_name" id="lastname"
+                           title="<?= $escaper->escapeHtmlAttr(__('Last Name')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr($viewModel->getLastName()) ?>"
+                           class="w-full required rounded-lg border-gray-200 p-3 text-sm"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Last Name')) ?>"
+                           data-validate='{"required": true}' @change="onChange"
+                           type="text"
+                           disabled="disabled" readonly/>
+                </div>
+                <div class="field email required p-2">
+                    <label class="label" for="email">
+                        <span><?= $escaper->escapeHtml(__('Email')) ?></span>
+                    </label>
+                    <input name="email" id="email"
+                           title="<?= $escaper->escapeHtmlAttr(__('Email')) ?>"
+                           value="<?= $escaper->escapeHtmlAttr($viewModel->getUserEmail()) ?>"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Email')) ?>"
+                           class="w-full required rounded-lg border-gray-200 p-3 text-sm"
+                           type="email"
+                           data-validate="{required:true, 'email':true}"
+                           disabled="disabled" readonly/>
+                </div>
+                <div class="field designation required p-2">
+                    <label class="label" for="designation">
+                        <span><?= $escaper->escapeHtml(__('Designation')) ?></span>
+                    </label>
+                    <input name="designation" id="designation"
+                           title="<?= $escaper->escapeHtmlAttr(__('Designation')) ?>"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Designation')) ?>"
+                           class="w-full rounded-lg border-gray-200 p-3 text-sm" maxlength="80"
+                           type="text"
+                           value="<?= /* @noEscape */ $designation ?? '' ?>"/>
+                </div>
+                <div class="field company required p-2">
+                    <label class="label" for="company">
+                        <span><?= $escaper->escapeHtml(__('Company')) ?></span>
+                    </label>
+                    <input name="company" id="company"
+                           title="<?= $escaper->escapeHtmlAttr(__('Company')) ?>"
+                           placeholder="<?= $escaper->escapeHtmlAttr(__('Company')) ?>"
+                           class="w-full  rounded-lg border-gray-200 p-3 text-sm"
+                           maxlength="80" type="text"
+                           value="<?= $escaper->escapeHtmlAttr($company ?? '') ?>"/>
+                </div>
+                <?php if ($viewModel->isWebsite()): ?>
+                    <?php $website = ($model) ? $model->getWebsite() : '' ?>
+                    <div class="field website required p-2">
+                        <label class="label" for="website">
+                            <span><?= $escaper->escapeHtml(__('Company\'s Website')) ?></span>
+                        </label>
+                        <input name="website" id="website"
+                               title="<?= $escaper->escapeHtmlAttr(__('Website')) ?>"
+                               placeholder="<?= $escaper->escapeHtmlAttr(__('Website')) ?>"
+                               data-validate='{"required": true}' @change="onChange"
+                               class="w-full required rounded-lg border-gray-200 p-3 text-sm" type="text"
+                               value="<?= $escaper->escapeHtmlAttr($website) ?>"/>
+                    </div>
+                <?php endif; ?>
+                <div class="field uploaded_file required p-2">
+                    <label class="label" for="uploaded_file">
+                        <span><?= $escaper->escapeHtml(__('Image')) ?></span>
+                    </label>
+                    <input name="uploaded_file"
+                           class="block text-xs text-blue-700 file:mr-4 file:py-2 file:px-4 file:rounded-full
+                           file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-blue-700
+                           hover:file:bg-violet-100"
+                           id="uploaded_file" type="file"
+                           accept=".png, .jpg, .jpeg, .gif" @change="loadFile"
+                           value="<?= /* @noEscape */ $uploadedFile ?? '' ?>"/>
+                    <input type="hidden" name="old_image" id="old_image"
+                           value="<?= /* @noEscape */ $uploadedFile ?? '' ?>">
+                    <p id="image-type-declare" class="text-gray-500 text-xs">
+                        <?= $escaper->escapeHtml(__('Accept Only Jpg, Png, Gif, Jpeg Format')) ?></p>
+                    <div class="shrink-0  py-2 px-4">
+                        <?php if (isset($model)): ?>
+                            <img id='preview_img' class="h-16 w-16 object-cover rounded-full"
+                                 src="<?= $escaper->escapeUrl(__($block->getImageFullPath($model))) ?>"
+                                 alt="Current profile photo"/>
+                        <?php else: ?>
+                            <img id='preview_img' class="h-16 w-16 object-cover rounded-full"
+                                 src="<?= $escaper->escapeUrl(__($placeholder)) ?>"
+                                 alt="Current profile photo"/>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="field comment required p-2">
+                    <label class="label" for="comment">
+                        <span><?= $escaper->escapeHtml(__('What’s on your mind?')) ?></span>
+                    </label>
+                    <div class="w-full block border border-gray-200 overflow-hidden rounded-md"
+                         x-data="wysiwyg()" x-init="init">
+                        <div class="w-full flex border-b border-gray-200 text-xl text-gray-600">
+                            <?php foreach ($buttons as $button): ?>
+                                <?php $cmd = $button[0]; $param = $button[1]
+                                    ?? null;
+                                $iconClass = $button[2]; ?>
+                                <a @click="format('<?= /* @noEscape */ $cmd ?>', '<?= /* @noEscape */ $param ?>')"
+                                        class="outline-none focus:outline-none border<?= isset($button[1])
+                                            ? '-l' : '-r' ?> border-gray-200 w-10 h-10<?= isset($button[1])
+                                            ? ' mr-1' : '' ?> hover:text-indigo-500 active:bg-gray-50" >
+                                    <i class="<?= /* @noEscape */ $iconClass ?>"></i>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="w-full">
+                            <iframe x-ref="wysiwyg" class="w-full h-96 overflow-y-auto"></iframe>
+                            <input type="hidden" name="content" id="testimonial_content"
+                                   value="<?= /* @noEscape */ $content ?? '' ?>"/>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <?= $block->getChildHtml('form.additional.info') ?>
+            <div class="actions-toolbar w-full">
+                <div class="primary">
+                    <?= $block->getBlockHtml('formkey') ?>
+                    <input type="hidden" name="testimonial_id" id="id" value="<?= /* @noEscape */ $id ?? '' ?>"/>
+                    <button type="submit"
+                            title="<?= $escaper->escapeHtmlAttr(__('Submit')) ?>"
+                            class="action submit primary">
+                        <span><?= $escaper->escapeHtml(__('Submit')) ?></span>
+                    </button>
+                </div>
+                <div class="primary">
+                    <a href="<?= $escaper->escapeUrl($block->getCancelAction()) ?>">
+                        <button type="button"
+                                title="<?= $escaper->escapeHtmlAttr(__('Cancel')) ?>"
+                                class="action submit primary">
+                            <span><?= $escaper->escapeHtml(__('Cancel')) ?></span>
+                        </button>
+                    </a>
+                </div>
+            </div>
+            <div class="w-full">
+                <?= $block->getChildHtml('form.additional.after') ?>
+                <?php /*= $recaptcha ? $recaptcha->getLegalNoticeHtml(ReCaptcha::RECAPTCHA_FORM_ID_CONTACT) : '' */?>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    /**
+     * Load Image
+     *
+     * @param event
+     */
+    var loadFile = function (event) {
+        var input = event.target;
+        var file = input.files[0];
+        var type = file.type;
+        var output = document.getElementById('preview_img');
+
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.onload = function () {
+            URL.revokeObjectURL(output.src)
+        }
+    };
+
+    /**
+     * Init Testimonial Form.
+     *
+     * @returns {{hasCaptchaToken: number, testimonialSubmitForm(*): void, errors: number}}
+     */
+    function initTestimonialForm() {
+        return {
+            errors: 0,
+            hasCaptchaToken: 0,
+            testimonialSubmitForm(event) {
+                event.preventDefault();
+
+                this.validate()
+                    .then(() => {
+                        event.target.submit()
+                    })
+                    .catch((invalid) => {
+                        if (invalid.length > 0) {
+                            invalid[0].focus();
+                        }
+                    });
+            }
+        }
+    }
+
+    /**
+     * Wysiwyg Editor
+     *
+     * @returns {{init: init, format: format, wysiwyg: null}}
+     */
+    function wysiwyg() {
+        return {
+            wysiwyg: null,
+            init: function () {
+                this.wysiwyg = this.$refs.wysiwyg;
+                if (!this.wysiwyg.contentDocument) {
+                    this.wysiwyg.addEventListener('load', this.init);
+                    return;
+                }
+
+                this.wysiwyg.contentDocument.querySelector('head').innerHTML += `<style>
+                *, ::after, ::before {box-sizing: border-box;}
+                :root {tab-size: 4;}
+                html {line-height: 1.15;text-size-adjust: 100%;}
+                body {margin: 0px; padding: 1rem 0.5rem;}
+                body {font-family: system-ui, -apple-system, "Segoe UI",Roboto, Helvetica, Arial,
+                        sans-serif, "Apple Color Emoji", "Segoe UI Emoji";}
+                </style>`;
+                this.wysiwyg.contentDocument.body.innerHTML = `<?= /* @noEscape */ $content ?? '' ?>`;
+                this.wysiwyg.contentDocument.designMode = "on";
+                this.wysiwyg.contentDocument.body.onkeyup = function () {
+                    document.getElementById("testimonial_content").value = this.innerHTML
+                };
+            },
+            format: function (cmd, param) {
+                this.wysiwyg.contentDocument.execCommand(cmd, !1, param || null);
+            },
+        };
+    }
+</script>

@@ -1,0 +1,286 @@
+<?php
+/**
+ * MageINIC
+ * Copyright (C) 2023. MageINIC <support@mageinic.com>
+ *
+ * NOTICE OF LICENSE
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see https://opensource.org/licenses/gpl-3.0.html.
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category MageINIC
+ * @package Hyva_MageINICTestimonial
+ * @copyright Copyright (c) 2023. MageINIC (https://www.mageinic.com/)
+ * @license https://opensource.org/licenses/gpl-3.0.html GNU General Public License,version 3 (GPL-3.0)
+ * @author MageINIC <support@mageinic.com>
+ */
+
+use Hyva\MageINICTestimonial\ViewModel\HyvaData;
+use MageINIC\Testimonial\Block\Widget\Testimonial;
+use Magento\Framework\Escaper;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/**
+ * Testimonial Design 4
+ *
+ * @var Testimonial $block
+ * @var Escaper $escaper
+ * @var ViewModelRegistry $viewModels
+ * @var HyvaData $hyvaData
+ * @var HeroiconsOutline $heroIcons
+ */
+
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+$hyvaData = $viewModels->require(HyvaData::class);
+$gliderUrl = $block->getViewFileUrl('Magento_PageBuilder::js/glider.min.js');
+$testimonialCollection = $block->getTestimonial();
+$design = $block->getDesignOptions();
+
+$sliderClass = "testimonial-glider-$design";
+$prevButton = "glider-prev-$design";
+$nextButton = "glider-next-$design";
+$dotsButton = "glider-dots-$design";
+
+?>
+<?php if ($block->getEnableExtension()):?>
+    <?php if ($block->getSliderEnable() && $testimonialCollection): ?>
+        <div class="testimonial-main relative mb-5 testimonial-type-<?= $escaper->escapeHtmlAttr($design) ?>">
+            <?php if ($block->enableHeading()): ?>
+                <div class="testimonial-heading-wrapper mb-16 text-center w-full flex items-center flex-col">
+                    <h2 class="text-2xl font-semibold mb-2 relative uppercase w-fit
+                     border-solid border-b-4 border-[#9acd32]">
+                        <?= $escaper->escapeHtml(__($block->getTestimonialHeading())) ?>
+                    </h2>
+                    <p class="font-semibold text-gray-600">
+                        <?= $escaper->escapeHtml(__($block->getTestimonialMetaHeading())) ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+            <div data-role="<?= $escaper->escapeHtmlAttr($sliderClass); ?>"
+                class="testimonial-wrapper" id="testimonial-wrapper">
+                <?php foreach ($testimonialCollection as $testimonial):?>
+                    <div class="testimonial-row details-type-<?= $escaper->escapeHtmlAttr($design) ?>">
+                        <div class="content-quote-section border border-solid border-gray-300 font-sans mx-auto relative
+                        after:absolute after:bottom-[2px] after:left-[8%] after:w-0 after:h-0 after:border-[20px]
+                        after:border-transparent after:border-solid after:border-t-[#ffffff] after:border-b-0
+                        after:border-r-0 after:ml-[-10px] after:mb-[-20px] before:absolute before:bottom-0
+                        before:left-[8%] before:w-0 before:h-0 before:border-[21px] before:border-transparent
+                        before:border-solid before:border-t-[#b9b9b9] before:border-b-0 before:border-r-0
+                        before:ml-[-10px] before:mb-[-20px]">
+                            <div class="user-testimonial">
+                                <div class="content-testimonial py-[16px] pr-[14px] pl-[46px] before:leading-[26px]
+                                relative before:text-[70px] before:top-[25px] before:left-[7px] before:text-[#9acd32]
+                                before:content-['❝'] before:absolute">
+                                    <p x-data="{ isCollapsed: false, maxLength: 85, originalContent: '', content: '' }"
+                                       x-init="originalContent = $el.firstElementChild.textContent.trim();
+                                       content = originalContent.slice(0, maxLength)">
+                                    <span x-text="isCollapsed ? originalContent : content">
+                                        <?= /* @noEscape */ $hyvaData->manageHtmlTag($testimonial->getContent());  ?>
+                                    </span>
+                                        <button @click="isCollapsed = !isCollapsed"
+                                                x-show="originalContent.length > maxLength"
+                                                x-text="isCollapsed ? '⏏' : '▼'"></button>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial-section flex items-center justify-center py-12 px-10">
+                            <div class="testimonial-left-section pr-4">
+                                <div class="testimonial-image-wrapper w-[72px] h-[72px] overflow-hidden">
+                                    <img class="object-cover w-full h-full"
+                                         src="<?= $escaper->escapeUrl($block->getImageUrl($testimonial)) ?>"
+                                         alt="<?= $escaper->escapeHtml(__($testimonial->getFirstName())) ?>"
+                                         width="72px"/>
+                                </div>
+                            </div>
+                            <div class="testimonial-right-section">
+                                <div class="name-testimonial font-bold">
+                                    <span class="firstname">
+                                        <?= $escaper->escapeHtml(__($testimonial->getFirstName())) ?>
+                                    </span>
+                                    <span class="lastname">
+                                        <?= $escaper->escapeHtml(__($testimonial->getLastName())) ?>
+                                    </span>
+                                </div>
+                                <div class="designation-company">
+                                    <span class="company">
+                                        <?= $escaper->escapeHtml(__('%1 at: ', $testimonial->getDesignation())) ?>
+                                        <?php if ($block->isWebsite()): ?>
+                                            <?php $website = $testimonial->getWebsite() ?? '#' ?>
+                                            <a href="<?= $escaper->escapeUrl($website) ?>">
+                                        <?php endif; ?>
+                                            <?= $escaper->escapeHtml(__($testimonial->getCompany())) ?>
+                                        <?php if ($block->isWebsite()): ?>
+                                            </a>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="arrows flex items-center justify-center flex-1 p-4">
+                <?php if ($block->getArrow()): ?>
+                    <button
+                        aria-label="<?= $escaper->escapeHtml(__('Previous')) ?>"
+                        class="<?= $escaper->escapeHtmlAttr($prevButton); ?> w-8 h-8 mr-1
+                         text-black rounded-full outline-none focus:outline-none absolute top-[58%] -left-[30px]
+                         transform translate-x-[-50%] translate-y-[-50%] border border-solid border-gray-300 flex
+                         items-center justify-center">
+                        <?= $heroIcons->chevronLeftHtml("w-5 h-5", 25, 25, ['aria-hidden' => 'true']); ?>
+                    </button>
+                <?php endif; ?>
+                <?php if ($block->getSliderDots()): ?>
+                    <div role="tablist"
+                         class="<?= $escaper->escapeHtmlAttr($dotsButton); ?> select-none flex flex-wrap
+                          mx-1 justify-center p-0 focus:outline-none"></div>
+                <?php endif; ?>
+                <?php if ($block->getArrow()): ?>
+                    <button
+                        aria-label="<?= $escaper->escapeHtml(__('Next')) ?>"
+                        class="<?= $escaper->escapeHtmlAttr($nextButton); ?> w-8 h-8 ml-1
+                         text-black rounded-full outline-none focus:outline-none absolute top-[58%] -right-[56px]
+                         transform translate-x-[-50%] translate-y-[-50%] border border-solid border-gray-300 flex
+                         items-center justify-center">
+                        <?= $heroIcons->chevronRightHtml("w-5 h-5", 25, 25, ['aria-hidden' => 'true']); ?>
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+        <script>
+            'use strict';
+
+            (() => {
+                const initCarousels = () => {
+                    if (!Glider) {
+                        return;
+                    }
+
+                    const initSliderCarousel = () => {
+                        const gliderElement = document.querySelector(
+                            `[data-role="<?= $escaper->escapeHtmlAttr($sliderClass); ?>"]`);
+
+                        if (!gliderElement) {
+                            return;
+                        }
+
+                        const gliderDots = document.querySelector(`.<?= $escaper->escapeJs($dotsButton); ?>`);
+                        const gliderPrev = document.querySelector(`.<?= $escaper->escapeJs($prevButton); ?>`);
+                        const gliderNext = document.querySelector(`.<?= $escaper->escapeJs($nextButton); ?>`);
+
+                        const glider = new Glider(gliderElement, {
+                            slidesToShow: <?= $escaper->escapeJs($block->getDefaultSlide())
+                                ? $escaper->escapeJs($block->getDefaultSlide()) : 1  ?>,
+                            slidesToScroll: <?= $escaper->escapeJs($block->getDefaultSlick())
+                                ? $escaper->escapeJs($block->getDefaultSlick()) : 1  ?>,
+                            scrollLock: true,
+                            rewind: <?= $escaper->escapeJs($block->getLooping())
+                                ? $escaper->escapeJs($block->getLooping()) : "false" ?>,
+                            draggable: true,
+                            dragVelocity: 2.5,
+                            dots: gliderDots,
+                            arrows: {
+                                prev: gliderPrev,
+                                next: gliderNext,
+                            },
+                            responsive: <?= /* @noEscape */ $hyvaData->getHyvaSliderBreakPoints()  ?>,
+                        });
+
+                        var autoplay = <?= $escaper->escapeJs($block->getAutoplay()) ?>
+
+                        if (autoplay !== false) {
+                            var autoplaySpeed = <?= $escaper->escapeJs($block->getAutoplaySpeed())
+                                ? $escaper->escapeJs($block->getAutoplaySpeed()) : 2000 ?>;
+                            var infiniteLoop = <?= $escaper->escapeJs($block->getLooping())
+                                ? $escaper->escapeJs($block->getLooping()) : false ?>;
+
+                            gliderAutoplay(
+                                glider,
+                                autoplaySpeed,
+                                infiniteLoop
+                            );
+                        }
+                    };
+
+                    const gliderAutoplay = (glider, milliseconds, loop) => {
+                        const pagesCount = glider.track.childElementCount;
+                        let slideTimeout = null;
+                        let nextIndex = 1;
+                        let paused = false;
+
+                        const slide = () => {
+                            slideTimeout = setTimeout(
+                                () => {
+                                    if (loop && nextIndex >= pagesCount) {
+                                        nextIndex = 0;
+                                    }
+                                    glider.scrollItem(nextIndex);
+                                },
+                                parseInt(milliseconds)
+                            );
+                        };
+
+                        glider.ele.addEventListener('glider-animated', () => {
+                            nextIndex = glider.slide + glider.opt.slidesToScroll;
+                            window.clearInterval(slideTimeout);
+                            if (!paused && (loop || nextIndex < pagesCount)) {
+                                slide();
+                            }
+                        });
+
+                        const pause = () => {
+                            if (!paused) {
+                                clearInterval(slideTimeout);
+                                paused = true;
+                            }
+                        };
+
+                        const unpause = () => {
+                            if (paused) {
+                                slide();
+                                paused = false;
+                            }
+                        };
+
+                        glider.ele.parentElement.addEventListener('mouseover', pause, {passive: true});
+                        glider.ele.parentElement.addEventListener('touchstart', pause, {passive: true});
+                        glider.ele.parentElement.addEventListener('mouseout', unpause, {passive: true});
+                        glider.ele.parentElement.addEventListener('touchend', unpause, {passive: true});
+
+                        slide();
+                    };
+
+                    initSliderCarousel();
+                };
+
+                window.addEventListener('DOMContentLoaded', () => {
+
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+
+                    script.addEventListener('load', () => {
+                        initCarousels();
+                    });
+
+                    script.src = '<?= $escaper->escapeJs($escaper->escapeUrl($gliderUrl)) ?>';
+                    document.head.appendChild(script);
+                });
+
+            })();
+        </script>
+    <?php else: ?>
+        <div class="message info empty">
+            <div><?= $escaper->escapeHtml(__(' There is no matching testimonial for this store.')) ?></div>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
